@@ -101,3 +101,9 @@ def submit_record_in_db(record):
         bank_name=record[6],
         submit_date=record[7],
     )
+
+def make_number_amount_comma_seperated(number):
+    return ("{:,}".format(number))
+
+def make_number_amount_comma_unseperated(num_string):
+    return int(num_string.replace(',', ''))

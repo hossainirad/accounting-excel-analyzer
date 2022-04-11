@@ -44,6 +44,23 @@ class Ui_MainWindow(object):
         self.tableWidget.horizontalHeader().setSortIndicatorShown(True)
         self.tableWidget.horizontalHeader().setStretchLastSection(False)
         self.tableWidget.verticalHeader().setCascadingSectionResizes(True)
+
+        self.splitter = QtWidgets.QSplitter(self.centralwidget)
+        self.splitter.setGeometry(QtCore.QRect(120, 350, 451, 31))
+        self.splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter.setObjectName("splitter")
+
+        self.sum_amount_holder = QtWidgets.QPlainTextEdit(self.splitter)
+        self.sum_amount_holder.setReadOnly(True)
+        self.sum_amount_holder.setObjectName("plainTextEdit")
+        self.show_sum_line_edit = QtWidgets.QTextEdit(self.splitter)
+        font = QtGui.QFont()
+        font.setPointSize(19)
+        font.setBold(True)
+        font.setWeight(75)
+        self.show_sum_line_edit.setFont(font)
+        self.show_sum_line_edit.setReadOnly(True)
+        self.show_sum_line_edit.setObjectName("textEdit")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
@@ -63,6 +80,11 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "row 1"))
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "col 1"))
+        self.show_sum_line_edit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:19pt; font-weight:600; font-style:normal;\">\n"
+"<p align=\"center\" dir=\'rtl\' style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:11pt; font-weight:400;\">جمع مبالغ چک ها:</span></p></body></html>"))
 
 
 if __name__ == "__main__":

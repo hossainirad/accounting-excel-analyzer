@@ -25,19 +25,6 @@ class Ui_MainWindow(object):
         self.select_file_btn.setStyleSheet("font-size: 15px;")
         self.select_file_btn.setObjectName("pushButton")
         MainWindow.setCentralWidget(self.centralwidget)
-        # list of new check
-        # self.new_check_list_show = QtWidgets.QListWidget(self.centralwidget)
-        # self.new_check_list_show.setHidden(True)
-        # self.new_check_list_show.setGeometry(QtCore.QRect(0, 90, 1000, 571))
-        # self.new_check_list_show.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        # self.new_check_list_show.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        # self.new_check_list_show.setLayoutDirection(QtCore.Qt.RightToLeft)
-        # self.new_check_list_show.setObjectName("list_show")
-        # self.new_check_list_show.setStyleSheet("background: red;\n"
-        #                              "color: white;\n"
-        #                              "font-weight: bold;\n"
-        #                              "font-size: 20px;")
-        ##
 
 
         self.new_check_table_show = QtWidgets.QTableWidget(self.centralwidget)
@@ -48,14 +35,7 @@ class Ui_MainWindow(object):
         self.new_check_table_show.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.new_check_table_show.horizontalHeader().setSortIndicatorShown(True)
         self.new_check_table_show.setObjectName("tableWidget")
-        # self.new_check_table_show.setColumnCount(1)
-        # self.new_check_table_show.setRowCount(3)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.new_check_table_show.setVerticalHeaderItem(0, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.new_check_table_show.setVerticalHeaderItem(1, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.new_check_table_show.setVerticalHeaderItem(2, item)
+
 
         self.selected_rows = []
 
@@ -81,17 +61,35 @@ class Ui_MainWindow(object):
         self.submit_record_btn.setStyleSheet("font-size: 15px;")
         self.submit_record_btn.setObjectName("submit_record_btn")
         self.submit_record_btn.setHidden(True)
+
+        self.splitter = QtWidgets.QSplitter(self.centralwidget)
+        self.splitter.setGeometry(QtCore.QRect(280, 560, 451, 31))
+        self.splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter.setObjectName("splitter")
+        self.splitter.setHidden(True)
+
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setBold(True)
+        font.setWeight(75)
+
+        self.sum_amount_holder = QtWidgets.QPlainTextEdit(self.splitter)
+        self.sum_amount_holder.setFont(font)
+        self.sum_amount_holder.setReadOnly(True)
+        self.sum_amount_holder.setObjectName("plainTextEdit")
+
+        self.show_sum_line_edit = QtWidgets.QTextEdit(self.splitter)
+        self.show_sum_line_edit.setFont(font)
+        self.show_sum_line_edit.setReadOnly(True)
+        self.show_sum_line_edit.setObjectName("textEdit")
         MainWindow.setCentralWidget(self.centralwidget)
 
-
+        MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
         # signals and functions
         self.select_file_btn.clicked.connect(self.file_select)
-        # self.new_check_list_show.itemClicked.connect(self.change_item_background_style)
-        # self.new_check_list_show.itemClicked.connect(self.unchange_item_background_style)
         self.submit_record_btn.clicked.connect(self.submit_selected_record_in_db)
-
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -116,6 +114,13 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "نام بانک"))
         item = self.new_check_table_show.horizontalHeaderItem(7)
         item.setText(_translate("MainWindow", "تاریخ ثبت(اختیاری)"))
+
+        self.show_sum_line_edit.setHtml(_translate("MainWindow",
+                                                   "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                   "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                   "p, li { white-space: pre-wrap; }\n"
+                                                   "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:19pt; font-weight:600; font-style:normal;\">\n"
+                                                   "<p align=\"center\" dir=\'rtl\' style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:11pt; font-weight:400;\">جمع مبالغ چک ها:</span></p></body></html>"))
 
     def file_select(self):
         self.file_select = QtWidgets.QFileDialog.getOpenFileName(MainWindow, 'Please give the excel file Mr. Kooti')
@@ -146,7 +151,7 @@ class Ui_MainWindow(object):
         self.new_check_table_show.setHidden(False)
         _translate = QtCore.QCoreApplication.translate
         # self.new_check_list_show = list_item
-        self.new_check_table_show.setRowCount(len(list_item) + 1)
+        self.new_check_table_show.setRowCount(len(list_item))
         for item_index in range(len(list_item)):  # 0 1 2 3 4 5 6 7
             ## add record to table
             font = QtGui.QFont()
@@ -156,12 +161,18 @@ class Ui_MainWindow(object):
             item.setText(str(item_index+1))
             self.new_check_table_show.setVerticalHeaderItem(item_index, item)
             for record_index in range(len(list_item[item_index])):
+                # print()
                 item = QtWidgets.QTableWidgetItem()
-                item.setText(str(list_item[item_index][record_index]))
+                if record_index == 1:
+                    item.setText(excel_reader.make_number_amount_comma_seperated(list_item[item_index][record_index]))
+                else:
+                    item.setText(str(list_item[item_index][record_index]))
                 self.new_check_table_show.setItem(item_index, record_index, item)  # row, column, item
 
 
         self.submit_record_btn.setHidden(False)
+        self.splitter.setHidden(False)
+        self.fill_sum_amount_holder()
 
     def change_item_background_style(self):
         item = QtWidgets.QListWidgetItem()
@@ -172,24 +183,28 @@ class Ui_MainWindow(object):
 
     def submit_selected_record_in_db(self):
         selected_rows = self.new_check_table_show.selectionModel().selectedRows()
-        print(selected_rows[0].__dir__())
         for selected_record in selected_rows:
 
-        #     print('--->', selected_record)
             single_record = []
-            # row_number = selected_record.row()
             for cell in range(8):
                 cell_text = self.new_check_table_show.item(selected_record.row(), cell)
                 if cell_text:
                     single_record.append(cell_text.text())
                 else:
                     single_record.append(None)
-
             excel_reader.submit_record_in_db(single_record)
 
-        # self.new_check_table_show.setHidden(True)
-        self.new_check_table_show.clearContents()
-        self.submit_record_btn.setHidden(True)
+            # remove selected rows
+            self.new_check_table_show.removeRow(selected_record.row())
+            self.fill_sum_amount_holder()
+
+    def fill_sum_amount_holder(self):
+        self.sum_amount = 0
+        for row in range(self.new_check_table_show.rowCount()):
+            amount = self.new_check_table_show.item(row, 1).text()
+            amount = excel_reader.make_number_amount_comma_unseperated(amount)
+            self.sum_amount += amount
+        self.sum_amount_holder.setPlainText(excel_reader.make_number_amount_comma_seperated(self.sum_amount))
 
 
 if __name__ == "__main__":
