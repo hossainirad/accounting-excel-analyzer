@@ -9,7 +9,7 @@ from check_db import CheckModel
 from openpyxl import load_workbook
 import excel_reader
 import check_db
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 
 
 class Ui_MainWindow(object):
@@ -25,6 +25,13 @@ class Ui_MainWindow(object):
         self.select_file_btn.setStyleSheet("font-size: 15px;")
         self.select_file_btn.setObjectName("pushButton")
         MainWindow.setCentralWidget(self.centralwidget)
+
+        # submit record button
+        self.submit_record_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.submit_record_btn.setGeometry(QtCore.QRect(300, 50, 91, 31))
+        self.submit_record_btn.setStyleSheet("font-size: 15px;")
+        self.submit_record_btn.setObjectName("submit_record_btn")
+        self.submit_record_btn.setHidden(True)
 
 
         self.new_check_table_show = QtWidgets.QTableWidget(self.centralwidget)
@@ -54,14 +61,6 @@ class Ui_MainWindow(object):
             self.new_check_table_show.setHorizontalHeaderItem(item_index, item)
 
 
-
-        # submit record button
-        self.submit_record_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.submit_record_btn.setGeometry(QtCore.QRect(300, 50, 91, 31))
-        self.submit_record_btn.setStyleSheet("font-size: 15px;")
-        self.submit_record_btn.setObjectName("submit_record_btn")
-        self.submit_record_btn.setHidden(True)
-
         self.splitter = QtWidgets.QSplitter(self.centralwidget)
         self.splitter.setGeometry(QtCore.QRect(280, 560, 451, 31))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
@@ -82,7 +81,20 @@ class Ui_MainWindow(object):
         self.show_sum_line_edit.setFont(font)
         self.show_sum_line_edit.setReadOnly(True)
         self.show_sum_line_edit.setObjectName("textEdit")
-        MainWindow.setCentralWidget(self.centralwidget)
+
+
+        self.buttonPrint = QtWidgets.QPushButton(self.centralwidget)
+        self.buttonPrint.setGeometry(QtCore.QRect(0, 300, 91, 31))
+        self.buttonPrint.setStyleSheet("font-size: 15px;")
+        self.buttonPrint.setObjectName("buttonPrint")
+        # self.buttonPrint.setHidden(True)
+
+        self.buttonPreview= QtWidgets.QPushButton(self.centralwidget)
+        self.buttonPreview.setGeometry(QtCore.QRect(0, 360, 91, 31))
+        self.buttonPreview.setStyleSheet("font-size: 15px;")
+        self.buttonPreview.setObjectName("buttonPreview")
+        # self.buttonPreview.setHidden(True)
+
 
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -90,6 +102,8 @@ class Ui_MainWindow(object):
         # signals and functions
         self.select_file_btn.clicked.connect(self.file_select)
         self.submit_record_btn.clicked.connect(self.submit_selected_record_in_db)
+        self.buttonPrint.clicked.connect(self.handlePrint)
+        self.buttonPreview.clicked.connect(self.handlePreview)
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -97,6 +111,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.select_file_btn.setText(_translate("MainWindow", "انتخاب فایل"))
+        self.buttonPrint.setText(_translate("MainWindow", "پرینت"))
+        self.buttonPreview.setText(_translate("MainWindow", "پیشنمایش پرینت"))
         self.submit_record_btn.setText(_translate("MainWindow", "غیربنفش"))
         item = self.new_check_table_show.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "شماره"))
@@ -161,7 +177,6 @@ class Ui_MainWindow(object):
             item.setText(str(item_index+1))
             self.new_check_table_show.setVerticalHeaderItem(item_index, item)
             for record_index in range(len(list_item[item_index])):
-                # print()
                 item = QtWidgets.QTableWidgetItem()
                 if record_index == 1:
                     item.setText(excel_reader.make_number_amount_comma_seperated(list_item[item_index][record_index]))
@@ -205,6 +220,88 @@ class Ui_MainWindow(object):
             amount = excel_reader.make_number_amount_comma_unseperated(amount)
             self.sum_amount += amount
         self.sum_amount_holder.setPlainText(excel_reader.make_number_amount_comma_seperated(self.sum_amount))
+
+    def print_widget(self):
+        dialog = QtPrintSupport.QPrintDialog()
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            self.handlePaintRequest(dialog.printer())
+
+        # Create printer
+        printer = QtPrintSupport.QPrinter()
+        # Create painter
+        painter = QtGui.QPainter()
+        # Start painter
+        painter.begin(printer)
+        # Grab a widget you want to print
+        screen = self.new_check_table_show.grab()
+        # printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
+        # Draw grabbed pixmap
+        painter.drawPixmap(10, 10, screen)
+
+        # End painting
+        painter.end()
+
+    def handlePrint(self):
+        dialog = QtPrintSupport.QPrintDialog()
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            self.handlePaintRequest(dialog.printer())
+
+    def handlePreview(self):
+        dialog = QtPrintSupport.QPrintPreviewDialog()
+        dialog.paintRequested.connect(self.handlePaintRequest)
+
+        dialog.exec_()
+
+    def handlePreview(self):
+        dialog = QtPrintSupport.QPrintPreviewDialog()
+        dialog.paintRequested.connect(self.handlePaintRequest)
+
+        dialog.exec_()
+
+    def handlePaintRequest(self, printer):
+        print("printer --> ", printer.orientation())
+        printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
+        print("printer 2--> ", printer.orientation())
+
+        document = self.makeTableDocument()
+        document.print_(printer)
+
+    def makeTableDocument(self):
+        document = QtGui.QTextDocument()
+        # document.setDocumentLayout(QtGui.QAbstractTextDocumentLayout(document))
+        cursor = QtGui.QTextCursor(document)
+        rows = self.new_check_table_show.rowCount()
+        columns = self.new_check_table_show.columnCount()
+        table = cursor.insertTable(rows + 1, columns)
+        format = table.format()
+        format.setHeaderRowCount(1)
+        table.setFormat(format)
+        format = cursor.blockCharFormat()
+        format.setFontWeight(QtGui.QFont.Bold)
+        format.setLayoutDirection(QtCore.Qt.RightToLeft)
+        # headers font
+        font = QtGui.QFont()
+        # font.setFamily("Times New Roman")
+        font.setBold(True)
+        font.setWeight(75)
+
+        for column in range(columns):
+            cursor.setCharFormat(format)
+            # cursor.setTextAlignment(QtCore.Qt.AlignCenter)
+            # cursor.setFont(font)
+            cursor.insertText(
+                self.new_check_table_show.horizontalHeaderItem(column).text())
+            cursor.movePosition(QtGui.QTextCursor.NextCell)
+
+        # fill data
+        for row in range(rows):
+            for column in range(columns):
+                if self.new_check_table_show.item(row, column):
+                    cursor.insertText(self.new_check_table_show.item(row, column).text())
+                else:
+                    cursor.insertText("")
+                cursor.movePosition(QtGui.QTextCursor.NextCell)
+        return document
 
 
 if __name__ == "__main__":
