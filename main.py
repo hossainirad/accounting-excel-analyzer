@@ -262,9 +262,7 @@ class Ui_MainWindow(object):
         dialog.exec_()
 
     def handlePaintRequest(self, printer):
-        print("printer --> ", printer.orientation())
         printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
-        print("printer 2--> ", printer.orientation())
 
         document = self.makeTableDocument()
         document.print_(printer)

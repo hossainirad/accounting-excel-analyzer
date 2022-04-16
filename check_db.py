@@ -1,7 +1,7 @@
 from peewee import *
 
 
-db = SqliteDatabase('kooti.db')
+db = SqliteDatabase('acounting-db.db')
 
 
 class CheckModel(Model):

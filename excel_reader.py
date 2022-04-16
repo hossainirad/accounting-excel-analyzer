@@ -37,6 +37,17 @@ def open_excel(file):
 
         if date_recieved_ckeck < '1401-01-01' and not len(exist_records):
             _new += 1
+        elif condition in ["در جريان وصول", "برگشتى"] and not len(exist_records):
+            submit_record_in_db([
+                number,
+                amount,
+                recieved_docs,
+                condition,
+                date_check,
+                date_recieved_ckeck,
+                bank_name,
+                None,
+            ])
         elif not len(exist_records):
             # add new records to new_records
             new_records.append([
@@ -56,9 +67,12 @@ def open_excel(file):
 
 
 def submit_record_in_db(record):
-    print(
-        record
-    )
+    condition = record[3]
+    submit_date = record[7]
+    if condition in ["در جريان وصول", "برگشتى"]:
+        submit_date = "راکد"
+    elif not submit_date:
+        submit_date = "غیر بنفش"
     CheckModel.create(
         obj_id=str(record[0])+record[5],
         number=record[0],
@@ -68,7 +82,7 @@ def submit_record_in_db(record):
         date_check=record[4],
         date_recieved_ckeck=record[5],
         bank_name=record[6],
-        submit_date=record[7],
+        submit_date=submit_date,
     )
 
 
