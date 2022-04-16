@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '01.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.0
-#
-# WARNING! All changes made in this file will be lost!
-from check_db import CheckModel
-from openpyxl import load_workbook
 import excel_reader
 import check_db
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
@@ -16,6 +9,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         # main window
         MainWindow.setObjectName("MainWindow")
+
         MainWindow.resize(1000, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -84,12 +78,14 @@ class Ui_MainWindow(object):
 
 
         self.buttonPrint = QtWidgets.QPushButton(self.centralwidget)
+        self.buttonPrint.setHidden(True)
         self.buttonPrint.setGeometry(QtCore.QRect(0, 300, 91, 31))
         self.buttonPrint.setStyleSheet("font-size: 15px;")
         self.buttonPrint.setObjectName("buttonPrint")
         # self.buttonPrint.setHidden(True)
 
         self.buttonPreview= QtWidgets.QPushButton(self.centralwidget)
+        self.buttonPreview.setHidden(True)
         self.buttonPreview.setGeometry(QtCore.QRect(0, 360, 91, 31))
         self.buttonPreview.setStyleSheet("font-size: 15px;")
         self.buttonPreview.setObjectName("buttonPreview")
@@ -109,7 +105,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "گاز ورمه"))
         self.select_file_btn.setText(_translate("MainWindow", "انتخاب فایل"))
         self.buttonPrint.setText(_translate("MainWindow", "پرینت"))
         self.buttonPreview.setText(_translate("MainWindow", "پیشنمایش پرینت"))
@@ -198,10 +194,13 @@ class Ui_MainWindow(object):
 
     def submit_selected_record_in_db(self):
         selected_rows = self.new_check_table_show.selectionModel().selectedRows()
+        selected_row_number = []
         for selected_record in selected_rows:
+            selected_row_number.append(selected_record.row())
 
             single_record = []
             for cell in range(8):
+
                 cell_text = self.new_check_table_show.item(selected_record.row(), cell)
                 if cell_text:
                     single_record.append(cell_text.text())
@@ -210,8 +209,12 @@ class Ui_MainWindow(object):
             excel_reader.submit_record_in_db(single_record)
 
             # remove selected rows
-            self.new_check_table_show.removeRow(selected_record.row())
-            self.fill_sum_amount_holder()
+        counter = 0
+        selected_row_number.sort()
+        for rm in selected_row_number:
+            self.new_check_table_show.removeRow(rm - counter)
+            counter += 1
+        self.fill_sum_amount_holder()
 
     def fill_sum_amount_holder(self):
         self.sum_amount = 0
